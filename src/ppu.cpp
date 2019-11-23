@@ -230,9 +230,6 @@ void PPU::showSprite(uint8_t number) {
     // TODO: Sprite flipping
     // TODO: Use flags
 
-    // Tiles are stored between 0x8000 and 0x8FFF
-    // Tiles are 16 byte big (8x8 * 2bit)
-
     // Read sprite attributes
     uint8_t* object_attributes = ram_ + 0xFE00 + number * 4;
     uint8_t y_pos = object_attributes[0];
@@ -240,6 +237,8 @@ void PPU::showSprite(uint8_t number) {
     uint8_t tile  = object_attributes[2];
     // uint8_t flags = object_attributes[3];
 
+    // Tiles are stored between 0x8000 and 0x8FFF
+    // Tiles are 16 byte big (8x8 * 2bit)
     uint8_t* tile_start = ram_ + 0x8000 + tile * 16;
 
     for (uint8_t row = 0; row < 8; ++row) {

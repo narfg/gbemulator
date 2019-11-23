@@ -5,7 +5,7 @@
 #include "romloader.h"
 
 TEST_CASE("printTile", "[ppu]") {
-    uint8_t ram[64000];
+    uint8_t ram[65536] = {0};
 
     // Fill one tile (example from https://fms.komkon.org/GameBoy/Tech/Software.html)
     const uint8_t tile[] = {0x7C, 0x7C, 0x00, 0xC6, 0xC6, 0x00, 0x00, 0xFE, 0xC6, 0xC6, 0x00, 0xC6, 0xC6, 0x00, 0x00, 0x00};
