@@ -104,6 +104,8 @@ static uint8_t instruction_cycles_prefix[256] = {
 InstructionDecoder::InstructionDecoder():
     instruction_(0),
     instruction_length_(0),
+    instruction_cycles_(0),
+    instruction_cycles_if_taken_(0),
     op_bytes_to_decode_(0),
     prefix_(false),
     decoding_finished_(false)
@@ -160,7 +162,6 @@ void InstructionDecoder::decodeInstruction(uint8_t byte) {
         fprintf(stderr, "ERROR Unknown instruction length of instruction %02X\n", byte);
         sleep(10);
         exit(1);
-        return;
     }
 
     op_bytes_to_decode_ = instruction_length_ - 1;
