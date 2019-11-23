@@ -1,0 +1,6 @@
+[submodule "3rdparty/Catch2"]
+	path = 3rdparty/Catch2
+	url = https://github.com/catchorg/Catch2
+[submodule "3rdparty/minifb"]
+	path = 3rdparty/minifb
+	url = https://github.com/emoon/minifb
