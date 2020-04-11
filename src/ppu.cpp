@@ -6,23 +6,14 @@
 #include <cstdint>
 #include <cstdio>
 
+#include "sdldisplay.h"
 #include "utils.h"
-#include "MiniFB.h"
 
 #define WIDTH 512
 #define HEIGHT 64
 
 #define WIDTH_D 256
 #define HEIGHT_D 256
-// static unsigned int s_buffer[WIDTH * HEIGHT];
-static unsigned int s_buffer[WIDTH_D * HEIGHT_D];
-
-uint32_t PPU::colormap_[4] = {
-    MFB_RGB(224, 248, 208),
-    MFB_RGB(136, 192, 112),
-    MFB_RGB(52, 104, 86),
-    MFB_RGB(8, 24, 32) // darkest green
-    };
 
 PPU::PPU(uint8_t* ram):
     ram_(ram),
@@ -31,12 +22,12 @@ PPU::PPU(uint8_t* ram):
     col_(0)
 {
     start_ = std::chrono::system_clock::now();
-    // mfb_open("Tiles", WIDTH, HEIGHT);
-    mfb_open("Display", WIDTH_D, HEIGHT_D);
+    display_ = std::make_unique<SDLDisplay>();
+    display_->init(WIDTH_D, HEIGHT_D);
 }
 
 PPU::~PPU() {
-    mfb_close();
+    display_->close();
 }
 
 void PPU::tick()
@@ -184,8 +175,8 @@ void PPU::printTile(uint8_t number) const {
     }
 }
 
-void PPU::drawPixel(uint16_t x, uint16_t y, uint32_t color) {
-    s_buffer[y*WIDTH_D + x] = color;
+void PPU::drawPixel(uint16_t x, uint16_t y, uint8_t color) {
+    display_->drawPixel(x, y, color);
 }
 
 void PPU::showDisplay() {
@@ -202,7 +193,8 @@ void PPU::showDisplay() {
     for (uint8_t k = 0; k < 40; ++k) {
         showSprite(k);
     }
-    mfb_update(s_buffer);
+
+    display_->update();
 }
 
 void PPU::showTile(uint8_t number, uint16_t x_start, uint16_t y_start) {
@@ -220,7 +212,7 @@ void PPU::showTile(uint8_t number, uint16_t x_start, uint16_t y_start) {
             uint8_t color = static_cast<uint8_t>(high << 1) | low;
             // Get grey shade from palette
             uint8_t grey_value_palette = (ram_[0xFF47] >> (2*color)) & 0x03;
-            drawPixel(x_start + col, y_start + row, colormap_[grey_value_palette]);
+            drawPixel(x_start + col, y_start + row, grey_value_palette);
         }
     }
 }
@@ -254,7 +246,7 @@ void PPU::showSprite(uint8_t number) {
             int16_t x = x_pos + col - 8 + ram_[0xFF43];
             int16_t y = y_pos + row - 16 + ram_[0xFF42];
             if (grey_value_palette !=0 && x >= 0 && y >= 0) {
-                drawPixel(x, y, colormap_[grey_value_palette]);
+                drawPixel(x, y, grey_value_palette);
             }
         }
     }
@@ -270,7 +262,8 @@ void PPU::showTiles() {
             tile_number++;
         }
     }
-    mfb_update(s_buffer);
+
+    display_->update();
 }
 
 void PPU::printTileMemory() const {
