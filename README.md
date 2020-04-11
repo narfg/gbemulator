@@ -8,8 +8,8 @@ unit-tested.
 - [x] Runs basic games
 - [x] Passes all of [Blargg's](https://gbdev.gg8.se/wiki/articles/Test_ROMs) CPU
 instruction tests
+- [x] Input handling
 - [ ] ESP32 port (in development)
-- [ ] Input handling
 
 ## Screenshots
 
@@ -50,10 +50,9 @@ cd build/
 
 * [Catch2](https://github.com/catchorg/Catch2): Unit testing framework
 (used as a submodule)
-* [MiniFB](https://github.com/emoon/minifb): Frame buffer library
-(used as a submodule)
+* [SDL 2.0](https://www.libsdl.org/): Simple DirectMedia Layer
 
 On a fresh installation of Ubuntu 18.04 you will need the following packages:
 ```
-sudo apt install cmake g++ git libx11-dev
+sudo apt install cmake g++ git libsdl2-dev
 ```
