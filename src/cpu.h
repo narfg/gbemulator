@@ -2,6 +2,7 @@
 #include <cstdint>
 
 #include "instructiondecoder.h"
+#include "joypad.h"
 #include "ppu.h"
 #include "timer.h"
 #include "romloader.h"
@@ -35,6 +36,7 @@ private:
     InstructionDecoder id_;
     PPU ppu_;
     Timer timer_;
+    Joypad joypad_;
 
     void printInfo();
     void printInstrWSP(const char* string, uint8_t operand0 = 0, uint8_t operand1 = 0) const;

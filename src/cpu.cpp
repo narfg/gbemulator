@@ -6,12 +6,13 @@
 #include <unistd.h>
 
 #include "instructiondecoder.h"
+#include "joypad.h"
 #include "ppu.h"
 #include "romloader.h"
 #include "utils.h"
 
 CPU::CPU(RomLoader* rl):
-    ppu_(ram_),
+    ppu_(ram_, &joypad_),
     timer_(ram_),
     pc_(0x100),
     mbc_rombank_(1),
@@ -2296,7 +2297,11 @@ uint8_t CPU::readFromMemory(uint16_t address) const {
     }
     if (address == 0xFF00) {
         // Read from buttons (set unused upper 2 bits to 1)
-        return ram_[address] | 0xC0;
+        if (getBitN(ram_[address], 4) == 0) {
+            return joypad_.getDirections() | 0xC0;
+        } else {
+            return joypad_.getButtons() | 0xC0;
+        }
     }
     if (address == 0xFF03 || address == 0xFF08 || address == 0xFF09 || address == 0xFF0A ||
         address == 0xFF0B || address == 0xFF0C || address == 0xFF0D || address == 0xFF0E ||
@@ -2453,8 +2458,9 @@ void CPU::writeToMemory(uint16_t address, uint8_t value) {
     }
     if (address == 0xFF00) {
         // Write to buttons
-        ram_[address] = value & 0xF0; // lower 4 bits are read only
-        ram_[address] |= 0x0F; // buttons are always not pressed
+        uint8_t button_state = ram_[address] & 0x0F;
+        ram_[address] = (value & 0xF0) | button_state; // lower 4 bits are read only
+        // ram_[address] |= 0x0F; // buttons are always not pressed
         ram_[address] |= 0xC0; // unused bits are always 1
         return;
     }

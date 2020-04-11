@@ -15,14 +15,15 @@
 #define WIDTH_D 256
 #define HEIGHT_D 256
 
-PPU::PPU(uint8_t* ram):
+PPU::PPU(uint8_t* ram, Joypad* joypad):
     ram_(ram),
+    joypad_(joypad),
     mode_(0),
     line_(0),
     col_(0)
 {
     start_ = std::chrono::system_clock::now();
-    display_ = std::make_unique<SDLDisplay>();
+    display_ = std::make_unique<SDLDisplay>(ram_, joypad_);
     display_->init(WIDTH_D, HEIGHT_D);
 }
 
