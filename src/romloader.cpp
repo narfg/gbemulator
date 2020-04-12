@@ -65,3 +65,27 @@ void RomLoader::writeRom(const std::string& filename, uint8_t* bytes, uint16_t s
     myfile.write(reinterpret_cast<char*>(rom), 32768);
     myfile.close();
 }
+
+void RomLoader::writeHeader(const std::string &filename)
+{
+    std::fstream myfile(filename, std::ios::out);
+    myfile << "uint8_t header_rom[] = {";
+
+    bool success = true;
+    int cnt = 0;
+    while (success) {
+        uint8_t rom_byte;
+        success = getNextByte(&rom_byte);
+        if (success) {
+            char buf[6];
+            snprintf(buf, 6, "0x%02X,", rom_byte);
+            myfile << buf;
+            cnt++;
+        }
+    }
+    myfile << "};" << std::endl;
+    myfile << "uint32_t header_rom_size = " << cnt << ";";
+    printf("ROM size: %d\n", cnt);
+
+    myfile.close();
+}

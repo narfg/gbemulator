@@ -194,3 +194,11 @@ TEST_CASE("Test V-Blank interrupt", "[romloader]") {
 
     rl.writeRom(filename, instructions, sizeof(instructions));
 }
+
+TEST_CASE("Test writing of header", "[romloader]") {
+    const std::string read_filename{"../../test_roms/gb-test-roms/cpu_instrs/cpu_instrs.gb"};
+    const std::string write_filename{"/tmp/rom_header.h"};
+
+    RomLoader rl(read_filename);
+    rl.writeHeader(write_filename);
+}

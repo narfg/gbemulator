@@ -1,3 +1,5 @@
+#ifndef ARDUINO
+
 #include "sdldisplay.h"
 
 #include <SDL2/SDL.h>
@@ -134,3 +136,5 @@ void SDLDisplay::drawPixel(uint16_t x, uint16_t y, uint8_t color) {
 
     SDL_RenderDrawPoint(renderer_, x, y);
 }
+
+#endif

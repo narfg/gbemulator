@@ -160,7 +160,7 @@ void InstructionDecoder::decodeInstruction(uint8_t byte) {
 
     if (instruction_length_ == 0 || instruction_length_ > 4) {
         fprintf(stderr, "ERROR Unknown instruction length of instruction %02X\n", byte);
-        sleep(10);
+        // sleep(10);
         exit(1);
     }
 

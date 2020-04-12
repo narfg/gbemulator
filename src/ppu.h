@@ -4,12 +4,11 @@
 #include <memory>
 
 #include "display.h"
-#include "joypad.h"
 
 class PPU
 {
 public:
-    PPU(uint8_t* ram, Joypad* joypad = nullptr);
+    PPU(uint8_t* ram, Display* display);
     ~PPU();
 
     void tick();
@@ -27,10 +26,9 @@ private:
     void showSprite(uint8_t number);
     void setMode(uint8_t mode);
 
-    std::unique_ptr<Display> display_;
+    Display* display_;
 
     uint8_t* ram_;
-    Joypad* joypad_;
     uint8_t mode_;
     uint8_t line_;
     uint8_t col_;
