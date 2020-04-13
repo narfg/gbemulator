@@ -1,12 +1,11 @@
 #include "ppu.h"
 
 #include <chrono>
-#include <thread>
 #include <cstdlib>
 #include <cstdint>
 #include <cstdio>
+#include <thread>
 
-#include "sdldisplay.h"
 #include "utils.h"
 
 #define WIDTH 512
@@ -15,15 +14,14 @@
 #define WIDTH_D 256
 #define HEIGHT_D 256
 
-PPU::PPU(uint8_t* ram, Joypad* joypad):
+PPU::PPU(uint8_t* ram, std::unique_ptr<Display> display):
+    display_(std::move(display)),
     ram_(ram),
-    joypad_(joypad),
     mode_(0),
     line_(0),
     col_(0)
 {
     start_ = std::chrono::system_clock::now();
-    display_ = std::make_unique<SDLDisplay>(ram_, joypad_);
     display_->init(WIDTH_D, HEIGHT_D);
 }
 
@@ -63,7 +61,7 @@ void PPU::tick()
         auto end = std::chrono::system_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start_);
         if (elapsed.count() < 16750) {  // 59.7 Hz
-            std::this_thread::sleep_for(std::chrono::microseconds(16750 - elapsed.count()));
+            // std::this_thread::sleep_for(std::chrono::microseconds(16750 - elapsed.count()));
         } else {
             printf("Emulation running too slow.\n");
         }

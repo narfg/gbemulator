@@ -1,16 +1,16 @@
 #pragma once
 #include <cstdint>
 
+#include "display.h"
 #include "instructiondecoder.h"
 #include "joypad.h"
 #include "ppu.h"
 #include "timer.h"
-#include "romloader.h"
 
 class CPU
 {
 public:
-    CPU(RomLoader* rl);
+    CPU(uint8_t* ram, std::unique_ptr<Display> display = nullptr, Joypad* joypad = nullptr);
     void run();
     void checkForInterrupts();
     bool executeInstruction(uint8_t instruction, bool prefix, uint8_t operand0, uint8_t operand1, bool* taken = nullptr);
@@ -31,12 +31,18 @@ public:
     uint8_t getFlagH() const;
     uint8_t getFlagC() const;
     void printStack() const;
+    void setROM(uint8_t* rom) {
+        rom_ = rom;
+        cartridge_type_ = rom_[0x0147];
+    }
+
 
 private:
+    uint8_t* ram_;
     InstructionDecoder id_;
     PPU ppu_;
     Timer timer_;
-    Joypad joypad_;
+    Joypad* joypad_;
 
     void printInfo();
     void printInstrWSP(const char* string, uint8_t operand0 = 0, uint8_t operand1 = 0) const;
@@ -156,9 +162,7 @@ private:
     uint16_t sp_;
     uint16_t pc_;
 
-    // Memory
-    uint8_t ram_[65536];
-    uint8_t rom_[2*65536];
+    uint8_t* rom_;
     uint8_t* io_;
     uint8_t cartridge_type_;
     uint8_t mbc_rombank_;

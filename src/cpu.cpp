@@ -1,19 +1,24 @@
 #include "cpu.h"
 
+#include <cassert>
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
+#include <memory>
 #include <unistd.h>
 
+#include "dummydisplay.h"
 #include "instructiondecoder.h"
 #include "joypad.h"
 #include "ppu.h"
 #include "romloader.h"
 #include "utils.h"
 
-CPU::CPU(RomLoader* rl):
-    ppu_(ram_, &joypad_),
+CPU::CPU(uint8_t* ram, std::unique_ptr<Display> display, Joypad* joypad):
+    ram_(ram == nullptr ? new uint8_t[65536] : ram),
+    ppu_(ram_, display == nullptr ? std::make_unique<DummyDisplay>() : std::move(display)),
     timer_(ram_),
+    joypad_(joypad),
     pc_(0x100),
     mbc_rombank_(1),
     mbc_mode_(0),
@@ -33,24 +38,9 @@ CPU::CPU(RomLoader* rl):
     hl_.l_ = 0x4D;
     io_ = ram_ + 0xFF00;
     sp_ = 0xFFFE;
-    // Load ROM into RAM
-    if (rl != nullptr) {
-        bool success = true;
-        int cnt = 0;
-        while (success) {
-            uint8_t rom_byte;
-            success = rl->getNextByte(&rom_byte);
-            rom_[cnt++] = rom_byte;
-        }
-        printf("ROM size: %d\n", cnt);
-        if (cnt == 1) {
-            fprintf(stderr, "Error reading ROM.\n");
-            exit(1);
-        }
-    }
 
     // Read cartridge type
-    cartridge_type_ = rom_[0x0147];
+    //cartridge_type_ = rom_[0x0147];
 
     ram_[0xFF00] = 0xCF; // Buttons
 
@@ -1210,7 +1200,7 @@ bool CPU::executeInstruction(uint8_t instruction, bool prefix, uint8_t operand0,
             break;
         default:
             fprintf(stderr, "ERROR executing instruction: %02X\n", instruction);
-            sleep(10);
+            // sleep(10);
             exit(1);
             return false;
         }
@@ -2298,9 +2288,9 @@ uint8_t CPU::readFromMemory(uint16_t address) const {
     if (address == 0xFF00) {
         // Read from buttons (set unused upper 2 bits to 1)
         if (getBitN(ram_[address], 4) == 0) {
-            return joypad_.getDirections() | 0xC0;
+            return joypad_->getDirections() | 0xC0;
         } else {
-            return joypad_.getButtons() | 0xC0;
+            return joypad_->getButtons() | 0xC0;
         }
     }
     if (address == 0xFF03 || address == 0xFF08 || address == 0xFF09 || address == 0xFF0A ||

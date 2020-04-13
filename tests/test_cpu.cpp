@@ -2,6 +2,7 @@
 #include "catch2/catch.hpp"
 
 #include "cpu.h"
+#include "romloader.h"
 
 TEST_CASE( "LD SP, d16", "[cpu]" ) {
     CPU cpu(nullptr);
