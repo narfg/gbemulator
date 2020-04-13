@@ -14,8 +14,8 @@
 #define WIDTH_D 256
 #define HEIGHT_D 256
 
-PPU::PPU(uint8_t* ram, Display* display):
-    display_(display),
+PPU::PPU(uint8_t* ram, std::unique_ptr<Display> display):
+    display_(std::move(display)),
     ram_(ram),
     mode_(0),
     line_(0),

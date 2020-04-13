@@ -12,8 +12,8 @@ TEST_CASE("printTile", "[ppu]") {
     const uint8_t tile[] = {0x7C, 0x7C, 0x00, 0xC6, 0xC6, 0x00, 0x00, 0xFE, 0xC6, 0xC6, 0x00, 0xC6, 0xC6, 0x00, 0x00, 0x00};
     memcpy(ram + 0x8000, tile, 16);
 
-    DummyDisplay display;
-    PPU ppu(ram, &display);
+    std::unique_ptr<Display> display = std::make_unique<DummyDisplay>();
+    PPU ppu(ram, std::move(display));
     ppu.printTile(0);
     ppu.showTiles();
     ppu.showDisplay();

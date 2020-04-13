@@ -10,7 +10,7 @@
 class CPU
 {
 public:
-    CPU(uint8_t* ram, Display* display = nullptr, Joypad* joypad = nullptr);
+    CPU(uint8_t* ram, std::unique_ptr<Display> display = nullptr, Joypad* joypad = nullptr);
     void run();
     void checkForInterrupts();
     bool executeInstruction(uint8_t instruction, bool prefix, uint8_t operand0, uint8_t operand1, bool* taken = nullptr);

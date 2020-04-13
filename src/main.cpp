@@ -48,9 +48,9 @@ int main(int argc, char* argv[]) {
     }
 
     Joypad joypad;
-    std::shared_ptr<Display> display = std::make_shared<SDLDisplay>(&ram[0], &joypad);
+    std::unique_ptr<Display> display = std::make_unique<SDLDisplay>(&ram[0], &joypad);
 
-    CPU cpu(&ram[0], display.get(), &joypad);
+    CPU cpu(&ram[0], std::move(display), &joypad);
     cpu.setROM(&rom[0]);
     cpu.setBreakPoint(0x0750);
     cpu.run();

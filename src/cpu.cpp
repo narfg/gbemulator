@@ -14,9 +14,9 @@
 #include "romloader.h"
 #include "utils.h"
 
-CPU::CPU(uint8_t* ram, Display* display, Joypad* joypad):
+CPU::CPU(uint8_t* ram, std::unique_ptr<Display> display, Joypad* joypad):
     ram_(ram == nullptr ? new uint8_t[65536] : ram),
-    ppu_(ram_, display == nullptr ? new DummyDisplay : display),
+    ppu_(ram_, display == nullptr ? std::make_unique<DummyDisplay>() : std::move(display)),
     timer_(ram_),
     joypad_(joypad),
     pc_(0x100),

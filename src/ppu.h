@@ -8,7 +8,7 @@
 class PPU
 {
 public:
-    PPU(uint8_t* ram, Display* display);
+    PPU(uint8_t* ram, std::unique_ptr<Display> display);
     ~PPU();
 
     void tick();
@@ -26,7 +26,7 @@ private:
     void showSprite(uint8_t number);
     void setMode(uint8_t mode);
 
-    Display* display_;
+    std::unique_ptr<Display> display_;
 
     uint8_t* ram_;
     uint8_t mode_;
