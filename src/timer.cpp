@@ -20,22 +20,22 @@ void Timer::tick()
 
     // TIMA
     uint8_t timer_enabled = ram_[0xFF07] & 0x04;
-    uint16_t divider = 0;
-    switch (ram_[0xFF07] & 0x03) {
-    case 0x00:
-        divider = 1024;
-        break;
-    case 0x01:
-        divider = 16;
-        break;
-    case 0x02:
-        divider = 64;
-        break;
-    case 0x03:
-        divider = 256;
-        break;
-    }
     if (timer_enabled) {
+        uint16_t divider = 0;
+        switch (ram_[0xFF07] & 0x03) {
+        case 0x00:
+            divider = 1024;
+            break;
+        case 0x01:
+            divider = 16;
+            break;
+        case 0x02:
+            divider = 64;
+            break;
+        case 0x03:
+            divider = 256;
+            break;
+        }
         tima_tick_++;
         if (tima_tick_ % divider == 0) {
             tima_tick_ = 0;
