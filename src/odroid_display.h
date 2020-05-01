@@ -19,9 +19,12 @@ public:
     }
 
     void drawFB() {
-        // std::thread thread{&FastDisplay::drawFB2, this};
+        if (drawing_thread_.joinable()) {
+            drawing_thread_.join();
+        }
+        drawing_thread_ = std::thread{&FastDisplay::drawFB2, this};
         // thread.detach();
-        drawFB2();
+        // drawFB2();
     }
 
     void drawFB2() {
@@ -33,6 +36,7 @@ public:
 
 private:
     uint16_t fb_[144 * 160] = {0xDAE7};
+    std::thread drawing_thread_;
 };
 
 class OdroidDisplay : public Display {
