@@ -140,8 +140,8 @@ void CPU::run() {
             }
         }
         if (!stopped_) {
-            for (int k = 0; k < cycles; ++k) {
-                timer_.tick();
+            for (int k = 0; k < cycles; k+=4) {
+                timer_.tick4();
             }
             for (int k = 0; k < cycles; k+=4) {
                 ppu_.tick();
@@ -152,9 +152,9 @@ void CPU::run() {
 }
 
 void CPU::checkForInterrupts() {
-    uint8_t i_enable = ram_[0xFFFF];
-    uint8_t i_flags = ram_[0xFF0F];
     if (interrupt_master_enable_) {
+        uint8_t i_enable = ram_[0xFFFF];
+        uint8_t i_flags = ram_[0xFF0F];
         for (uint8_t n = 0; n < 5; ++n) {
             if (getBitN(i_flags, n) && getBitN(i_enable, n)) {
                 // printf("Interrupt %d, cycles: %ld\n", n, cycles_);
@@ -173,6 +173,8 @@ void CPU::checkForInterrupts() {
         }
     } else {
         if (halted_) {
+            uint8_t i_enable = ram_[0xFFFF];
+            uint8_t i_flags = ram_[0xFF0F];
             if ((i_enable & i_flags & 0x1F) != 0) {
                 halted_ = false;
             }
