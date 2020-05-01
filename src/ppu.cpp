@@ -57,9 +57,11 @@ void PPU::tick()
     if (line_ == 144 && col_ == 0) {
         // V-Blank interrupt
         ram_[0xFF0F] |= 1;
+        auto end_before_show = std::chrono::system_clock::now();
         showDisplay();
         auto end = std::chrono::system_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start_);
+        auto elapsed_without_show = std::chrono::duration_cast<std::chrono::microseconds>(end_before_show - start_);
         if (elapsed.count() < 16750) {  // 59.7 Hz
             // std::this_thread::sleep_for(std::chrono::microseconds(16750 - elapsed.count()));
         } else {
@@ -67,7 +69,9 @@ void PPU::tick()
         }
         // auto end2 = std::chrono::system_clock::now();
         // auto elapsed2 = std::chrono::duration_cast<std::chrono::microseconds>(end2 - start_);
-        // printf("microseconds: %ld\n", elapsed.count());
+        printf("microseconds: %ld\n", static_cast<long int>(elapsed.count()));
+        printf("microseconds without show: %ld\n", static_cast<long int>(elapsed_without_show.count()));
+        printf("fps: %lf\n", 1.0/elapsed.count() * 1e6);
         // printf("microseconds after sleep: %ld\n", elapsed2.count());
         start_ = std::chrono::system_clock::now();
     }
@@ -180,6 +184,24 @@ void PPU::drawPixel(uint16_t x, uint16_t y, uint8_t color) {
 
 void PPU::showDisplay() {
     // Read from BG map 1
+    for (uint8_t row = 0; row < 18; ++row) {
+        for (uint8_t col = 0; col < 20; ++col) {
+            uint8_t tile_number = *(ram_ + getBGTileMapStart() + row * 32 + col);
+            uint16_t x_start = col * 8;
+            uint16_t y_start = row * 8;
+            showTile(tile_number, x_start, y_start);
+        }
+    }
+    // Draw tiles
+    for (uint8_t k = 0; k < 40; ++k) {
+        showSprite(k);
+    }
+
+    display_->update();
+}
+
+/*void PPU::showDisplayFull() {
+    // Read from BG map 1
     for (uint8_t row = 0; row < 32; ++row) {
         for (uint8_t col = 0; col < 32; ++col) {
             uint8_t tile_number = *(ram_ + getBGTileMapStart() + row * 32 + col);
@@ -194,7 +216,7 @@ void PPU::showDisplay() {
     }
 
     display_->update();
-}
+}*/
 
 void PPU::showTile(uint8_t number, uint16_t x_start, uint16_t y_start) {
     // Tiles are stored between 0x8000 and 0x8FFF or 0x8800-0x97FF.
