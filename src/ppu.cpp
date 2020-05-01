@@ -57,17 +57,21 @@ void PPU::tick()
     if (line_ == 144 && col_ == 0) {
         // V-Blank interrupt
         ram_[0xFF0F] |= 1;
+        auto end_before_show = std::chrono::system_clock::now();
         showDisplay();
         auto end = std::chrono::system_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start_);
+        auto elapsed_without_show = std::chrono::duration_cast<std::chrono::microseconds>(end_before_show - start_);
         if (elapsed.count() < 16750) {  // 59.7 Hz
-            // std::this_thread::sleep_for(std::chrono::microseconds(16750 - elapsed.count()));
+            std::this_thread::sleep_for(std::chrono::microseconds(16750 - elapsed.count()));
         } else {
             printf("Emulation running too slow.\n");
         }
         // auto end2 = std::chrono::system_clock::now();
         // auto elapsed2 = std::chrono::duration_cast<std::chrono::microseconds>(end2 - start_);
-        // printf("microseconds: %ld\n", elapsed.count());
+        printf("microseconds: %ld\n", static_cast<long int>(elapsed.count()));
+        printf("microseconds without show: %ld\n", static_cast<long int>(elapsed_without_show.count()));
+        printf("fps: %lf\n", 1.0/elapsed.count() * 1e6);
         // printf("microseconds after sleep: %ld\n", elapsed2.count());
         start_ = std::chrono::system_clock::now();
     }
@@ -179,12 +183,16 @@ void PPU::drawPixel(uint16_t x, uint16_t y, uint8_t color) {
 }
 
 void PPU::showDisplay() {
+    // FF42 - SCY - Scroll Y (R/W), FF43 - SCX - Scroll X (R/W)
+    uint8_t scroll_y = ram_[0xFF42];
+    uint8_t scroll_x = ram_[0xFF43];
+
     // Read from BG map 1
     for (uint8_t row = 0; row < 32; ++row) {
         for (uint8_t col = 0; col < 32; ++col) {
             uint8_t tile_number = *(ram_ + getBGTileMapStart() + row * 32 + col);
-            uint16_t x_start = col * 8;
-            uint16_t y_start = row * 8;
+            uint16_t x_start = col * 8 - scroll_x;
+            uint16_t y_start = row * 8 - scroll_y;
             showTile(tile_number, x_start, y_start);
         }
     }
@@ -211,7 +219,7 @@ void PPU::showTile(uint8_t number, uint16_t x_start, uint16_t y_start) {
             uint8_t color = static_cast<uint8_t>(high << 1) | low;
             // Get grey shade from palette
             uint8_t grey_value_palette = (ram_[0xFF47] >> (2*color)) & 0x03;
-            drawPixel(x_start + col, y_start + row, grey_value_palette);
+            drawPixel((x_start + col) % 256, (y_start + row) % 256, grey_value_palette);
         }
     }
 }
@@ -242,8 +250,8 @@ void PPU::showSprite(uint8_t number) {
             uint8_t color = static_cast<uint8_t>(high << 1) | low;
             // Get grey shade from palette
             uint8_t grey_value_palette = (ram_[0xFF47] >> (2*color)) & 0x03;
-            int16_t x = x_pos + col - 8 + ram_[0xFF43];
-            int16_t y = y_pos + row - 16 + ram_[0xFF42];
+            int16_t x = x_pos + col - 8;
+            int16_t y = y_pos + row - 16;
             if (grey_value_palette !=0 && x >= 0 && y >= 0) {
                 drawPixel(x, y, grey_value_palette);
             }
