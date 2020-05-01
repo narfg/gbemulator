@@ -62,16 +62,16 @@ void PPU::tick()
         auto end = std::chrono::system_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start_);
         auto elapsed_without_show = std::chrono::duration_cast<std::chrono::microseconds>(end_before_show - start_);
-        if (elapsed.count() < 16750) {  // 59.7 Hz
+        /*if (elapsed.count() < 16750) {  // 59.7 Hz
             std::this_thread::sleep_for(std::chrono::microseconds(16750 - elapsed.count()));
         } else {
             printf("Emulation running too slow.\n");
-        }
+        }*/
         // auto end2 = std::chrono::system_clock::now();
         // auto elapsed2 = std::chrono::duration_cast<std::chrono::microseconds>(end2 - start_);
-        printf("microseconds: %ld\n", static_cast<long int>(elapsed.count()));
-        printf("microseconds without show: %ld\n", static_cast<long int>(elapsed_without_show.count()));
-        printf("fps: %lf\n", 1.0/elapsed.count() * 1e6);
+        // printf("microseconds: %ld\n", static_cast<long int>(elapsed.count()));
+        // printf("microseconds without show: %ld\n", static_cast<long int>(elapsed_without_show.count()));
+        // printf("fps: %lf\n", 1.0/elapsed.count() * 1e6);
         // printf("microseconds after sleep: %ld\n", elapsed2.count());
         start_ = std::chrono::system_clock::now();
     }
@@ -178,7 +178,10 @@ void PPU::printTile(uint8_t number) const {
     }
 }
 
-void PPU::drawPixel(uint16_t x, uint16_t y, uint8_t color) {
+void PPU::drawPixel(int16_t x, int16_t y, uint8_t color) {
+    if (x < 0 || y < 0 || x > 255 || y > 255) {
+        return;
+    }
     display_->drawPixel(x, y, color);
 }
 
@@ -187,12 +190,19 @@ void PPU::showDisplay() {
     uint8_t scroll_y = ram_[0xFF42];
     uint8_t scroll_x = ram_[0xFF43];
 
+    // Calculate visible tiles
+    uint8_t col_start = scroll_x / 8;
+    uint8_t col_end = col_start + 20 + 1;
+
+    uint8_t row_start = scroll_y / 8;
+    uint8_t row_end = row_start + 18 + 1;
+
     // Read from BG map 1
-    for (uint8_t row = 0; row < 18; ++row) {
-        for (uint8_t col = 0; col < 20; ++col) {
-            uint8_t tile_number = *(ram_ + getBGTileMapStart() + row * 32 + col);
-            uint16_t x_start = col * 8;
-            uint16_t y_start = row * 8;
+    for (uint8_t row = row_start; row < row_end; ++row) {
+        for (uint8_t col = col_start; col < col_end; ++col) {
+            uint8_t tile_number = *(ram_ + getBGTileMapStart() + (row % 32) * 32 + (col % 32));
+            int16_t x_start = col * 8 - scroll_x;
+            int16_t y_start = row * 8 - scroll_y;
             showTile(tile_number, x_start, y_start);
         }
     }
@@ -204,25 +214,7 @@ void PPU::showDisplay() {
     display_->update();
 }
 
-/*void PPU::showDisplayFull() {
-    // Read from BG map 1
-    for (uint8_t row = 0; row < 32; ++row) {
-        for (uint8_t col = 0; col < 32; ++col) {
-            uint8_t tile_number = *(ram_ + getBGTileMapStart() + row * 32 + col);
-            uint16_t x_start = col * 8 - scroll_x;
-            uint16_t y_start = row * 8 - scroll_y;
-            showTile(tile_number, x_start, y_start);
-        }
-    }
-    // Draw tiles
-    for (uint8_t k = 0; k < 40; ++k) {
-        showSprite(k);
-    }
-
-    display_->update();
-}*/
-
-void PPU::showTile(uint8_t number, uint16_t x_start, uint16_t y_start) {
+void PPU::showTile(uint8_t number, int16_t x_start, int16_t y_start) {
     // Tiles are stored between 0x8000 and 0x8FFF or 0x8800-0x97FF.
     // Tiles are 16 byte big (8x8 * 2bit)
     uint8_t* tile_start = ram_ + getTileDataStart(number);
@@ -237,7 +229,8 @@ void PPU::showTile(uint8_t number, uint16_t x_start, uint16_t y_start) {
             uint8_t color = static_cast<uint8_t>(high << 1) | low;
             // Get grey shade from palette
             uint8_t grey_value_palette = (ram_[0xFF47] >> (2*color)) & 0x03;
-            drawPixel((x_start + col) % 256, (y_start + row) % 256, grey_value_palette);
+            // drawPixel((x_start + col) % 256, (y_start + row) % 256, grey_value_palette);
+            drawPixel(x_start + col, y_start + row, grey_value_palette);
         }
     }
 }

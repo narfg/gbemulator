@@ -21,8 +21,8 @@ private:
     bool getDisplayEnable();
     uint16_t getBGTileMapStart();
     uint16_t getTileDataStart(uint8_t number) const;
-    void drawPixel(uint16_t x, uint16_t y, uint8_t color);
-    void showTile(uint8_t number, uint16_t x_start, uint16_t y_start);
+    void drawPixel(int16_t x, int16_t y, uint8_t color);
+    void showTile(uint8_t number, int16_t x_start, int16_t y_start);
     void showSprite(uint8_t number);
     void setMode(uint8_t mode);
 
