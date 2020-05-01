@@ -6,6 +6,7 @@ class Timer
 public:
     Timer(uint8_t* ram);
     void tick();
+    void tick4();
 
 private:
     uint8_t* ram_;
