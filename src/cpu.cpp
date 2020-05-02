@@ -24,6 +24,7 @@ CPU::CPU(uint8_t* ram, std::unique_ptr<Display> display, Joypad* joypad):
     mbc_mode_(0),
     interrupt_master_enable_(false),
     halted_(false),
+    halt_bug_(false),
     stopped_(false),
     cycles_(0)
 {

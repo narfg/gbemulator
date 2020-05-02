@@ -32,6 +32,8 @@ int main(int argc, char* argv[]) {
     RomLoader rl(filename);
     uint8_t ram[65536];
     uint8_t rom[2*65536];
+    memset(ram, 0, sizeof(ram));
+    memset(rom, 0, sizeof(rom));
 
     // Load ROM into RAM
     bool success = true;
